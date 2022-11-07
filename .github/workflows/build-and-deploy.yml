@@ -1,0 +1,47 @@
+on:
+  pull_request:
+    types: [open, reopen]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3.1.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pack CLI via the official buildpack Action https://github.com/buildpacks/github-actions#setup-pack-cli-action
+        uses: buildpacks/github-actions/setup-pack@v4.8.1
+
+      - name: Build app with pack CLI & publish to GitHub Container Registry
+        run: |
+          pack build ghcr.io/romanigk/micronaut-kotlin-test:latest \
+              --builder paketobuildpacks/builder:tiny \
+              --buildpack paketo-buildpacks/java-native-image \
+              --path . \
+              --env "BP_JVM_VERSION=17" \
+              --env "BP_NATIVE_IMAGE=true" \
+              --cache-image ghcr.io/romanigk/micronaut-kotlin-test-paketo-cache-image:latest \
+              --publish
+#  deploy:
+#    runs-on: ubuntu-latest
+#    needs: build
+
+#    steps:
+#      - uses: actions/checkout@v2
+
+#      - name: Install flyctl via https://github.com/superfly/flyctl-actions
+#        uses: superfly/flyctl-actions/setup-flyctl@master
+
+#      - name: Deploy our Spring Boot app to fly.io
+#        run: flyctl deploy --image ghcr.io/romanigk/spring-boot-flyio:latest
+#        env:
+#          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
