@@ -6,20 +6,16 @@
 name: GraalVM CE CI
 on:
   push:
-    branches:
-      - master
-      - '[1-9]+.[0-9]+.x'
+    branches: ['main']
   pull_request:
-    branches:
-      - master
-      - '[1-9]+.[0-9]+.x'
+    branches: ['main']
 jobs:
   build:
     if: github.repository != 'micronaut-projects/micronaut-project-template'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['11', '17']
+        java: ['17']
         graalvm: ['latest', 'dev']
     steps:
        # https://github.com/actions/virtual-environments/issues/709
